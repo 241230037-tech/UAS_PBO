@@ -1005,6 +1005,6 @@ class MainView(tk.Tk):
         messagebox.showinfo(
             "Info Aplikasi",
             "Aplikasi Sistem Kasir Toko Kelontong Risky\n"
-            "Didesain dengan Tkinter & SQLite (Arsitektur MVC)\n\n"
+            "Didesain oleh Farel, Fatwa, Dimaz, dengan Tkinter & SQLite (Arsitektur MVC)\n\n"
             "Hak Cipta © 2026 - Semua Hak Dilindungi."
         )
