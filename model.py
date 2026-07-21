@@ -1,4 +1,4 @@
-import sqlite3  # fatwa
+import sqlite3  # fatwa al fiqri
 import hashlib
 import os
 from datetime import datetime
