@@ -4,28 +4,30 @@ from datetime import datetime
 
 # Import layers (MVC Architecture)
 from model import (
-    Database, 
-    UserManager, 
-    BarangManager, 
-    TransaksiManager, 
-    User, 
-    Barang, 
-    Transaksi, 
-    DetailTransaksi, 
+    Database,
+    UserManager,
+    BarangManager,
+    TransaksiManager,
+    User,
+    Barang,
+    Transaksi,
+    DetailTransaksi,
     DatabaseError
 )
 from view import (
-    MainView, 
-    LoginPage, 
-    DashboardPage, 
-    BarangPage, 
-    TransaksiPage, 
-    RiwayatPage, 
-    LaporanPage, 
+    MainView,
+    LoginPage,
+    DashboardPage,
+    BarangPage,
+    TransaksiPage,
+    RiwayatPage,
+    LaporanPage,
     UserPage
 )
 
 # Helper function for currency formatting (Rupiah)
+
+
 def format_rupiah(amount):
     try:
         val = float(amount)
@@ -34,8 +36,10 @@ def format_rupiah(amount):
     except (ValueError, TypeError):
         return "Rp 0"
 
+
 class Controller:
     """The Controller acts as the bridge connecting Model and View (Strict MVC)."""
+
     def __init__(self):
         # 1. Initialize Model Database and Managers
         try:
@@ -44,7 +48,8 @@ class Controller:
             self.barang_mgr = BarangManager(self.db)
             self.tx_mgr = TransaksiManager(self.db)
         except DatabaseError as e:
-            messagebox.showerror("Error Database", f"Fatal: Gagal inisialisasi database!\n{e}")
+            messagebox.showerror(
+                "Error Database", f"Fatal: Gagal inisialisasi database!\n{e}")
             exit(1)
 
         # 2. State management variables
@@ -85,9 +90,11 @@ class Controller:
             elif page_class == UserPage:
                 self.refresh_users()
         except DatabaseError as e:
-            messagebox.showerror("Error Database", f"Terjadi kesalahan saat memuat data: {e}")
+            messagebox.showerror(
+                "Error Database", f"Terjadi kesalahan saat memuat data: {e}")
         except Exception as e:
-            messagebox.showerror("Error Aplikasi", f"Gagal memuat halaman: {e}")
+            messagebox.showerror(
+                "Error Aplikasi", f"Gagal memuat halaman: {e}")
 
     def bind_events(self):
         """Establishes listeners between UI widgets and actions."""
@@ -97,7 +104,8 @@ class Controller:
 
         # --- SIDEBAR & MENU BAR ---
         self.view.sidebar.btn_logout.configure(command=self.handle_logout)
-        self.view.file_menu.entryconfig("Keluar Aplikasi", command=self.handle_app_exit)
+        self.view.file_menu.entryconfig(
+            "Keluar Aplikasi", command=self.handle_app_exit)
 
         # --- BARANG PAGE ---
         brg_pg = self.view.pages[BarangPage]
@@ -116,8 +124,10 @@ class Controller:
 
         # --- TRANSAKSI PAGE (KASIR) ---
         tx_pg = self.view.pages[TransaksiPage]
-        tx_pg.btn_search_prod.configure(command=self.handle_search_product_cashier)
-        tx_pg.ent_search_prod.bind("<Return>", lambda e: self.handle_search_product_cashier())
+        tx_pg.btn_search_prod.configure(
+            command=self.handle_search_product_cashier)
+        tx_pg.ent_search_prod.bind(
+            "<Return>", lambda e: self.handle_search_product_cashier())
         tx_pg.tree_prod.bind("<Double-1>", self.handle_add_to_cart)
         tx_pg.btn_remove_cart.configure(command=self.handle_remove_from_cart)
         tx_pg.btn_edit_qty.configure(command=self.handle_edit_qty_cart)
@@ -127,36 +137,38 @@ class Controller:
 
         # --- RIWAYAT PAGE ---
         riw_pg = self.view.pages[RiwayatPage]
-        riw_pg.tree_tx.bind("<<TreeviewSelect>>", self.handle_select_riwayat_tx)
+        riw_pg.tree_tx.bind("<<TreeviewSelect>>",
+                            self.handle_select_riwayat_tx)
 
         # --- LAPORAN PAGE ---
         lap_pg = self.view.pages[LaporanPage]
         lap_pg.btn_filter.configure(command=self.handle_filter_laporan)
 
-
     # =====================================================================
     # 1. LOGIN & LOGOUT ROUTINES
     # =====================================================================
-    
+
     def handle_login(self):
         login_pg = self.view.pages[LoginPage]
         username = login_pg.ent_user.get().strip()
         password = login_pg.ent_pass.get().strip()
 
         if not username or not password:
-            messagebox.showwarning("Peringatan", "Username dan Password wajib diisi!")
+            messagebox.showwarning(
+                "Peringatan", "Username dan Password wajib diisi!")
             return
 
         try:
             user = self.user_mgr.authenticate(username, password)
             if user:
                 self.current_user = user
-                messagebox.showinfo("Login Sukses", f"Selamat datang kembali, {user.nama} ({user.role})!")
-                
+                messagebox.showinfo(
+                    "Login Sukses", f"Selamat datang kembali, {user.nama} ({user.role})!")
+
                 # Show appropriate screens and menus
                 self.view.show_sidebar_by_role(user.role)
                 self.view.enable_nav_menu()
-                
+
                 # Redirect based on role
                 if user.role == "Owner":
                     self.view.switch_page(DashboardPage)
@@ -164,14 +176,17 @@ class Controller:
                     self.view.switch_page(TransaksiPage)
                 login_pg.clear_inputs()
             else:
-                messagebox.showerror("Gagal Masuk", "Username atau Password salah!")
+                messagebox.showerror(
+                    "Gagal Masuk", "Username atau Password salah!")
                 login_pg.ent_pass.delete(0, tk.END)
                 login_pg.ent_pass.focus_set()
         except DatabaseError as e:
-            messagebox.showerror("Error Database", f"Gagal memverifikasi login:\n{e}")
+            messagebox.showerror(
+                "Error Database", f"Gagal memverifikasi login:\n{e}")
 
     def handle_logout(self):
-        confirm = messagebox.askyesno("Konfirmasi Keluar", "Apakah Anda yakin ingin keluar dari akun?")
+        confirm = messagebox.askyesno(
+            "Konfirmasi Keluar", "Apakah Anda yakin ingin keluar dari akun?")
         if confirm:
             self.current_user = None
             self.cart_items.clear()
@@ -180,10 +195,10 @@ class Controller:
             self.view.switch_page(LoginPage)
 
     def handle_app_exit(self):
-        confirm = messagebox.askyesno("Keluar Aplikasi", "Keluar dari sistem kasir?")
+        confirm = messagebox.askyesno(
+            "Keluar Aplikasi", "Keluar dari sistem kasir?")
         if confirm:
             self.view.destroy()
-
 
     # =====================================================================
     # 2. DASHBOARD DATA
@@ -197,7 +212,7 @@ class Controller:
         tot_transaksi = self.tx_mgr.get_total_count()
         income_today = self.tx_mgr.get_income_today()
         low_stock_items = self.barang_mgr.get_low_stock(limit=5)
-        
+
         # 2. Update metric labels
         dash_pg.card_barang.configure(text=str(tot_barang))
         dash_pg.card_transaksi.configure(text=str(tot_transaksi))
@@ -209,9 +224,9 @@ class Controller:
         for b in low_stock_items:
             dash_pg.tree_warn.insert(
                 "", "end",
-                values=(b.id_barang, b.nama_barang, b.kategori, format_rupiah(b.harga), f"{b.stok} Unit")
+                values=(b.id_barang, b.nama_barang, b.kategori,
+                        format_rupiah(b.harga), f"{b.stok} Unit")
             )
-
 
     # =====================================================================
     # 3. BARANG DATA CRUD (OOP: Polymorphism & Encapsulation)
@@ -219,7 +234,7 @@ class Controller:
 
     def refresh_barang(self):
         brg_pg = self.view.pages[BarangPage]
-        
+
         # Load all barang list
         items = self.barang_mgr.get_all()
         self.populate_barang_tree(items)
@@ -235,7 +250,8 @@ class Controller:
         for b in items:
             brg_pg.tree.insert(
                 "", "end",
-                values=(b.id_barang, b.nama_barang, b.kategori, format_rupiah(b.harga), b.stok)
+                values=(b.id_barang, b.nama_barang, b.kategori,
+                        format_rupiah(b.harga), b.stok)
             )
 
     def handle_search_barang(self):
@@ -253,17 +269,18 @@ class Controller:
         sel = brg_pg.tree.selection()
         if not sel:
             return
-        
+
         row_vals = brg_pg.tree.item(sel[0], "values")
         # Format values
         id_val = row_vals[0]
         nama = row_vals[1]
         kategori = row_vals[2]
-        
+
         # Clean currency format back to float numbers
-        harga_clean = row_vals[3].replace("Rp ", "").replace(".", "").replace(",", ".")
+        harga_clean = row_vals[3].replace(
+            "Rp ", "").replace(".", "").replace(",", ".")
         stok = row_vals[4]
-        
+
         brg_pg.fill_form(id_val, nama, kategori, harga_clean, stok)
 
     def handle_save_barang(self):
@@ -288,22 +305,26 @@ class Controller:
             # Check if this is a CREATE or an UPDATE (ID entry state)
             # Use a robust check since Ttk state representation varies by platform
             is_new = ("disabled" not in str(brg_pg.ent_id.cget("state")))
-            
+
             if is_new:
                 # Check duplication
                 existing = self.barang_mgr.get_by_id(b.id_barang)
                 if existing:
-                    messagebox.showerror("Error Duplikasi", f"ID Barang '{b.id_barang}' sudah terdaftar di database!")
+                    messagebox.showerror(
+                        "Error Duplikasi", f"ID Barang '{b.id_barang}' sudah terdaftar di database!")
                     return
                 self.barang_mgr.create(b)
-                messagebox.showinfo("Sukses", f"Barang '{b.nama_barang}' berhasil ditambahkan!")
+                messagebox.showinfo(
+                    "Sukses", f"Barang '{b.nama_barang}' berhasil ditambahkan!")
             else:
                 self.barang_mgr.update(b)
-                messagebox.showinfo("Sukses", f"Detail barang '{b.nama_barang}' berhasil diperbarui!")
+                messagebox.showinfo(
+                    "Sukses", f"Detail barang '{b.nama_barang}' berhasil diperbarui!")
 
             self.refresh_barang()
         except DatabaseError as e:
-            messagebox.showerror("Database Error", f"Gagal menyimpan data barang:\n{e}")
+            messagebox.showerror(
+                "Database Error", f"Gagal menyimpan data barang:\n{e}")
 
     def handle_clear_barang(self):
         self.refresh_barang()
@@ -312,22 +333,25 @@ class Controller:
         brg_pg = self.view.pages[BarangPage]
         sel = brg_pg.tree.selection()
         if not sel:
-            messagebox.showwarning("Peringatan", "Silakan pilih barang yang ingin dihapus dari tabel!")
+            messagebox.showwarning(
+                "Peringatan", "Silakan pilih barang yang ingin dihapus dari tabel!")
             return
-        
+
         row_vals = brg_pg.tree.item(sel[0], "values")
         id_barang = row_vals[0]
         nama_barang = row_vals[1]
 
-        confirm = messagebox.askyesno("Konfirmasi Hapus", f"Apakah Anda yakin ingin menghapus '{nama_barang}' ({id_barang})?")
+        confirm = messagebox.askyesno(
+            "Konfirmasi Hapus", f"Apakah Anda yakin ingin menghapus '{nama_barang}' ({id_barang})?")
         if confirm:
             try:
                 self.barang_mgr.delete(id_barang)
-                messagebox.showinfo("Sukses", "Barang berhasil dihapus dari sistem.")
+                messagebox.showinfo(
+                    "Sukses", "Barang berhasil dihapus dari sistem.")
                 self.refresh_barang()
             except DatabaseError as e:
-                messagebox.showerror("Database Error", f"Gagal menghapus barang:\n{e}")
-
+                messagebox.showerror(
+                    "Database Error", f"Gagal menghapus barang:\n{e}")
 
     # =====================================================================
     # 4. USER MANAGER CRUD
@@ -336,7 +360,7 @@ class Controller:
     def refresh_users(self):
         usr_pg = self.view.pages[UserPage]
         usr_pg.clear_form()
-        
+
         # Load user list
         users = self.user_mgr.get_all()
         usr_pg.tree.delete(*usr_pg.tree.get_children())
@@ -351,29 +375,30 @@ class Controller:
         sel = usr_pg.tree.selection()
         if not sel:
             return
-        
+
         vals = usr_pg.tree.item(sel[0], "values")
         id_val = vals[0]
         username = vals[1]
         nama = vals[2]
         role = vals[3]
-        
+
         usr_pg.fill_form(id_val, username, nama, role)
 
     def handle_save_user(self):
         usr_pg = self.view.pages[UserPage]
         inputs = usr_pg.get_inputs()
-        
+
         # Encapsulation validation
         try:
             # Temporary password validation on create
             is_update = bool(inputs["id_user"])
             if not is_update and not inputs["password"].strip():
                 raise ValueError("Password wajib diisi untuk pengguna baru!")
-                
+
             u = User(
                 username=inputs["username"],
-                password=inputs["password"] if not is_update else "",  # Checked separately on update
+                # Checked separately on update
+                password=inputs["password"] if not is_update else "",
                 nama=inputs["nama"],
                 role=inputs["role"],
                 id_user=inputs["id_user"] if is_update else None
@@ -387,16 +412,20 @@ class Controller:
                 # Save new user
                 u.password = inputs["password"]  # Put raw for manager hashing
                 self.user_mgr.create(u)
-                messagebox.showinfo("Sukses", f"Akun '{u.username}' berhasil dibuat!")
+                messagebox.showinfo(
+                    "Sukses", f"Akun '{u.username}' berhasil dibuat!")
             else:
                 # Update user
-                u_pw = inputs["password"] if inputs["password"].strip() else None
+                u_pw = inputs["password"] if inputs["password"].strip(
+                ) else None
                 self.user_mgr.update(u, new_password=u_pw)
-                messagebox.showinfo("Sukses", f"Akun '{u.username}' berhasil diperbarui!")
-            
+                messagebox.showinfo(
+                    "Sukses", f"Akun '{u.username}' berhasil diperbarui!")
+
             self.refresh_users()
         except DatabaseError as e:
-            messagebox.showerror("Database Error", f"Gagal menyimpan akun:\n{e}")
+            messagebox.showerror(
+                "Database Error", f"Gagal menyimpan akun:\n{e}")
 
     def handle_clear_user(self):
         self.refresh_users()
@@ -405,27 +434,31 @@ class Controller:
         usr_pg = self.view.pages[UserPage]
         sel = usr_pg.tree.selection()
         if not sel:
-            messagebox.showwarning("Peringatan", "Pilih akun yang ingin dihapus!")
+            messagebox.showwarning(
+                "Peringatan", "Pilih akun yang ingin dihapus!")
             return
-        
+
         vals = usr_pg.tree.item(sel[0], "values")
         id_user = vals[0]
         username = vals[1]
 
         # Prevent suicide delete
         if int(id_user) == self.current_user.id_user:
-            messagebox.showerror("Error Akses", "Anda tidak dapat menghapus akun Anda sendiri!")
+            messagebox.showerror(
+                "Error Akses", "Anda tidak dapat menghapus akun Anda sendiri!")
             return
 
-        confirm = messagebox.askyesno("Konfirmasi Hapus", f"Hapus akun '{username}'?")
+        confirm = messagebox.askyesno(
+            "Konfirmasi Hapus", f"Hapus akun '{username}'?")
         if confirm:
             try:
                 self.user_mgr.delete(id_user)
-                messagebox.showinfo("Sukses", f"Akun '{username}' berhasil dihapus.")
+                messagebox.showinfo(
+                    "Sukses", f"Akun '{username}' berhasil dihapus.")
                 self.refresh_users()
             except DatabaseError as e:
-                messagebox.showerror("Database Error", f"Gagal menghapus akun:\n{e}")
-
+                messagebox.showerror(
+                    "Database Error", f"Gagal menghapus akun:\n{e}")
 
     # =====================================================================
     # 5. TRANSAKSI (POS KASIR) HANDLERS
@@ -433,7 +466,7 @@ class Controller:
 
     def refresh_transaksi(self):
         tx_pg = self.view.pages[TransaksiPage]
-        
+
         # Reset Invoice Code
         next_invoice = self.tx_mgr.generate_next_id()
         tx_pg.lbl_invoice.configure(text=next_invoice)
@@ -458,7 +491,7 @@ class Controller:
     def refresh_cashier_product_list(self, query=None):
         tx_pg = self.view.pages[TransaksiPage]
         tx_pg.tree_prod.delete(*tx_pg.tree_prod.get_children())
-        
+
         if query:
             items = self.barang_mgr.search(query)
         else:
@@ -467,7 +500,8 @@ class Controller:
         for b in items:
             tx_pg.tree_prod.insert(
                 "", "end",
-                values=(b.id_barang, b.nama_barang, format_rupiah(b.harga), b.stok)
+                values=(b.id_barang, b.nama_barang,
+                        format_rupiah(b.harga), b.stok)
             )
 
     def handle_search_product_cashier(self):
@@ -480,22 +514,25 @@ class Controller:
         sel = tx_pg.tree_prod.selection()
         if not sel:
             return
-        
+
         row = tx_pg.tree_prod.item(sel[0], "values")
         id_barang = row[0]
         nama_barang = row[1]
-        harga_clean = float(row[2].replace("Rp ", "").replace(".", "").replace(",", "."))
+        harga_clean = float(row[2].replace(
+            "Rp ", "").replace(".", "").replace(",", "."))
         stok_avail = int(row[3])
 
         if stok_avail <= 0:
-            messagebox.showwarning("Stok Habis", f"Stok untuk '{nama_barang}' habis! Silakan lakukan pengadaan barang.")
+            messagebox.showwarning(
+                "Stok Habis", f"Stok untuk '{nama_barang}' habis! Silakan lakukan pengadaan barang.")
             return
 
         # Check cart thresholds
         if id_barang in self.cart_items:
             det = self.cart_items[id_barang]
             if det.jumlah + 1 > stok_avail:
-                messagebox.showwarning("Stok Kurang", f"Batas stok tercapai. Maksimum pembelian: {stok_avail} unit.")
+                messagebox.showwarning(
+                    "Stok Kurang", f"Batas stok tercapai. Maksimum pembelian: {stok_avail} unit.")
                 return
             det.jumlah += 1
             det.subtotal = det.jumlah * harga_clean
@@ -513,14 +550,15 @@ class Controller:
     def update_cart_view(self):
         tx_pg = self.view.pages[TransaksiPage]
         tx_pg.tree_cart.delete(*tx_pg.tree_cart.get_children())
-        
+
         total_price = 0.0
         for item in self.cart_items.values():
             # Get original item single price
             unit_price = item.subtotal / item.jumlah
             tx_pg.tree_cart.insert(
                 "", "end",
-                values=(item.id_barang, item.nama_barang, format_rupiah(unit_price), item.jumlah, format_rupiah(item.subtotal))
+                values=(item.id_barang, item.nama_barang, format_rupiah(
+                    unit_price), item.jumlah, format_rupiah(item.subtotal))
             )
             total_price += item.subtotal
 
@@ -532,12 +570,13 @@ class Controller:
         tx_pg = self.view.pages[TransaksiPage]
         sel = tx_pg.tree_cart.selection()
         if not sel:
-            messagebox.showwarning("Peringatan", "Pilih item keranjang yang ingin dihapus!")
+            messagebox.showwarning(
+                "Peringatan", "Pilih item keranjang yang ingin dihapus!")
             return
-        
+
         row = tx_pg.tree_cart.item(sel[0], "values")
         id_barang = row[0]
-        
+
         if id_barang in self.cart_items:
             del self.cart_items[id_barang]
             self.update_cart_view()
@@ -546,9 +585,10 @@ class Controller:
         tx_pg = self.view.pages[TransaksiPage]
         sel = tx_pg.tree_cart.selection()
         if not sel:
-            messagebox.showwarning("Peringatan", "Pilih item keranjang yang ingin diubah kuantitasnya!")
+            messagebox.showwarning(
+                "Peringatan", "Pilih item keranjang yang ingin diubah kuantitasnya!")
             return
-        
+
         row = tx_pg.tree_cart.item(sel[0], "values")
         id_barang = row[0]
         nama_barang = row[1]
@@ -567,7 +607,7 @@ class Controller:
             minvalue=1,
             maxvalue=max_stock
         )
-        
+
         if new_qty is not None:
             det = self.cart_items[id_barang]
             det.jumlah = new_qty
@@ -576,7 +616,7 @@ class Controller:
 
     def handle_recalculate_change(self, event):
         tx_pg = self.view.pages[TransaksiPage]
-        
+
         # Calculate totals
         total = 0.0
         for item in self.cart_items.values():
@@ -587,7 +627,7 @@ class Controller:
         if not bayar_str:
             tx_pg.lbl_kembali.configure(text="Rp 0", foreground="#64748b")
             return
-        
+
         try:
             bayar = float(bayar_str)
             kembalian = bayar - total
@@ -595,47 +635,55 @@ class Controller:
             if kembalian < 0:
                 tx_pg.lbl_kembali.configure(foreground="#dc2626")  # Danger Red
             else:
-                tx_pg.lbl_kembali.configure(foreground="#16a34a")  # Success Green
+                tx_pg.lbl_kembali.configure(
+                    foreground="#16a34a")  # Success Green
         except ValueError:
-            tx_pg.lbl_kembali.configure(text="Input salah", foreground="#dc2626")
+            tx_pg.lbl_kembali.configure(
+                text="Input salah", foreground="#dc2626")
 
     def handle_cancel_transaction(self):
-        confirm = messagebox.askyesno("Konfirmasi", "Batalkan transaksi yang sedang berjalan?")
+        confirm = messagebox.askyesno(
+            "Konfirmasi", "Batalkan transaksi yang sedang berjalan?")
         if confirm:
             self.refresh_transaksi()
 
     def handle_checkout_transaction(self):
         tx_pg = self.view.pages[TransaksiPage]
-        
+
         invoice = tx_pg.lbl_invoice.cget("text")
         pelanggan = tx_pg.ent_pelanggan.get().strip()
         kasir = self.current_user.nama
-        
+
         if not self.cart_items:
-            messagebox.showwarning("Keranjang Kosong", "Tambahkan barang terlebih dahulu sebelum bayar!")
+            messagebox.showwarning(
+                "Keranjang Kosong", "Tambahkan barang terlebih dahulu sebelum bayar!")
             return
-        
+
         if not pelanggan:
-            messagebox.showwarning("Input Kurang", "Nama pelanggan harus diisi!")
+            messagebox.showwarning(
+                "Input Kurang", "Nama pelanggan harus diisi!")
             return
 
         # Recalculate totals
         total = sum(item.subtotal for item in self.cart_items.values())
-        
+
         # Validate Bayar Input
         bayar_str = tx_pg.ent_bayar.get().strip()
         if not bayar_str:
-            messagebox.showwarning("Pembayaran Kurang", "Nominal bayar wajib diinput!")
+            messagebox.showwarning("Pembayaran Kurang",
+                                   "Nominal bayar wajib diinput!")
             return
-        
+
         try:
             bayar = float(bayar_str)
             if bayar < total:
-                messagebox.showwarning("Pembayaran Kurang", f"Uang bayar kurang! Total belanja: {format_rupiah(total)}")
+                messagebox.showwarning(
+                    "Pembayaran Kurang", f"Uang bayar kurang! Total belanja: {format_rupiah(total)}")
                 return
             kembalian = bayar - total
         except ValueError:
-            messagebox.showerror("Input Salah", "Nominal bayar harus berupa angka!")
+            messagebox.showerror(
+                "Input Salah", "Nominal bayar harus berupa angka!")
             return
 
         # Prepare transaction payload (OOP encapsulation)
@@ -649,10 +697,10 @@ class Controller:
                 kembalian=kembalian,
                 details=list(self.cart_items.values())
             )
-            
+
             # Commit to SQLite
             self.tx_mgr.create(tx)
-            
+
             # Show receipt and notification
             receipt_msg = (
                 f"=== INVOICE TRANSAKSI ===\n"
@@ -667,14 +715,14 @@ class Controller:
                 f"Pembayaran Sukses!"
             )
             messagebox.showinfo("Transaksi Sukses", receipt_msg)
-            
+
             # Reset page
             self.refresh_transaksi()
         except ValueError as e:
             messagebox.showwarning("Gagal Checkout", str(e))
         except DatabaseError as e:
-            messagebox.showerror("Database Error", f"Checkout transaksi gagal diproses database:\n{e}")
-
+            messagebox.showerror(
+                "Database Error", f"Checkout transaksi gagal diproses database:\n{e}")
 
     # =====================================================================
     # 6. RIWAYAT TRANSAKSI PAGE
@@ -690,7 +738,8 @@ class Controller:
         for t in txs:
             riw_pg.tree_tx.insert(
                 "", "end",
-                values=(t.id_transaksi, t.tanggal, t.kasir, format_rupiah(t.total), format_rupiah(t.bayar), format_rupiah(t.kembalian))
+                values=(t.id_transaksi, t.tanggal, t.kasir, format_rupiah(
+                    t.total), format_rupiah(t.bayar), format_rupiah(t.kembalian))
             )
 
     def handle_select_riwayat_tx(self, event):
@@ -698,7 +747,7 @@ class Controller:
         sel = riw_pg.tree_tx.selection()
         if not sel:
             return
-        
+
         row = riw_pg.tree_tx.item(sel[0], "values")
         invoice_id = row[0]
 
@@ -711,11 +760,12 @@ class Controller:
                 u_price = d.subtotal / d.jumlah
                 riw_pg.tree_det.insert(
                     "", "end",
-                    values=(d.id_barang, d.nama_barang, format_rupiah(u_price), d.jumlah, format_rupiah(d.subtotal))
+                    values=(d.id_barang, d.nama_barang, format_rupiah(
+                        u_price), d.jumlah, format_rupiah(d.subtotal))
                 )
         except DatabaseError as e:
-            messagebox.showerror("Database Error", f"Gagal memuat rincian invoice:\n{e}")
-
+            messagebox.showerror(
+                "Database Error", f"Gagal memuat rincian invoice:\n{e}")
 
     # =====================================================================
     # 7. LAPORAN PAGE HANDLERS
@@ -735,13 +785,14 @@ class Controller:
             try:
                 datetime.strptime(d_str, "%Y-%m-%d")
             except ValueError:
-                messagebox.showerror("Format Tanggal Salah", f"Format {label} '{d_str}' tidak valid! Gunakan format YYYY-MM-DD (contoh: 2026-07-01).")
+                messagebox.showerror(
+                    "Format Tanggal Salah", f"Format {label} '{d_str}' tidak valid! Gunakan format YYYY-MM-DD (contoh: 2026-07-01).")
                 return
 
         try:
             # Query totals
             income, qty = self.tx_mgr.get_revenue_summary(start, end)
-            
+
             # Update metric visual cards
             lap_pg.card_omset.configure(text=format_rupiah(income))
             lap_pg.card_qty.configure(text=f"{qty} Unit")
@@ -752,10 +803,12 @@ class Controller:
             for r in rows:
                 lap_pg.tree_rep.insert(
                     "", "end",
-                    values=(r.id_transaksi, r.tanggal, r.kasir, format_rupiah(r.total))
+                    values=(r.id_transaksi, r.tanggal,
+                            r.kasir, format_rupiah(r.total))
                 )
         except DatabaseError as e:
-            messagebox.showerror("Database Error", f"Gagal menghasilkan laporan:\n{e}")
+            messagebox.showerror(
+                "Database Error", f"Gagal menghasilkan laporan:\n{e}")
 
 
 # =====================================================================

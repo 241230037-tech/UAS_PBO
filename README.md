@@ -21,23 +21,27 @@ Aplikasi ini mendemonstrasikan implementasi pola desain perangkat lunak Model-Vi
 
 ### 1. Dashboard Utama
 Menampilkan ringkasan data penting harian dan tabel peringatan untuk stok barang yang hampir habis.
-![Dashboard Utama](Screenshot%202026-07-21%20225844_2.png)
+![Dashboard Utama](Screenshot 2026-07-21 225844.png)
 
 ### 2. Form Transaksi Kasir Baru
 Sistem keranjang belanja interaktif untuk melayani transaksi pelanggan secara efisien, dilengkapi dengan fitur pencarian barang dan kalkulasi subtotal.
-![Transaksi Kasir](Screenshot%202026-07-21%20233827.png)
+![Transaksi Kasir](Screenshot 2026-07-21 225904.png)
 
 ### 3. Riwayat Transaksi Penjualan
 Rekapan bukti *invoice* transaksi yang telah berhasil diproses ke dalam basis data, menyajikan informasi detail kasir yang bertugas dan rincian item.
-![Riwayat Penjualan](Screenshot%202026-07-21%20225952_2.png)
+![Riwayat Penjualan](Screenshot 2026-07-21 233845.png)
 
 ### 4. Laporan Penjualan Toko
 Menyajikan ringkasan metrik total pendapatan/omset dan kuantitas barang terjual yang dapat disaring secara dinamis berdasarkan input rentang tanggal.
-![Laporan Penjualan](Screenshot%202026-07-21%20233845.png)
+![Laporan Penjualan](Screenshot 2026-07-21 233845.png)
 
 ### 5. Form Kelola Akun
 Antarmuka khusus bagi pemilik toko (Owner) untuk menambahkan, memperbarui, atau menghapus data pengguna dan membatasi hak akses sistem.
-![Kelola Akun](Screenshot%202026-07-21%20233925.png)
+![Kelola Akun](Screenshot 2026-07-21 233925.png)
+
+### 6. Form Data Barang (Manajemen Inventaris)
+Fasilitas CRUD penuh untuk mengelola data produk yang dijual di toko. Dilengkapi dengan form pengisian barang baru, penetapan harga dan stok, tombol aksi manajemen, serta tabel daftar barang interaktif dengan fitur pencarian.
+![Data Barang](Screenshot 2026-07-21 235239.png)
 
 ## Struktur Arsitektur (Strict MVC)
 
